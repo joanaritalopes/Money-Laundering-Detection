@@ -1,4 +1,4 @@
-# Load and join csv files (HI and LI) by transactions, accounts and patterns
+# 1. Load and join csv files (HI and LI) by transactions, accounts and patterns
 
 import csv
 from typing import List
