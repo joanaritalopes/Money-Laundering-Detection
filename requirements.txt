@@ -1,0 +1,20 @@
+# Data handling
+pandas
+numpy
+
+# Text processing (optional, if .txt has unstructured data)
+nltk
+scikit-learn
+
+# Machine learning
+scikit-learn
+xgboost        # optional but often effective
+lightgbm       # optional, alternative to xgboost
+
+# Visualization (optional, for EDA)
+matplotlib
+seaborn
+
+# Utility
+tqdm            # for progress bars
+jupyter         # if using notebooks
