@@ -1,14 +1,19 @@
 # 2. Cleaning and Formating the data -> check for data formats, distribution, outliers, then normalize, encode date
 
+import logging
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
+logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(message)s')
 
-df_transactions = pd.read_csv('data/processed/transactions.csv')
-df_accounts = pd.read_csv('data/processed/accounts.csv')
-print(df_transactions)
 
+def load_to_pd():
+    df_transactions = pd.read_csv('data/processed/transactions.csv')
+    df_accounts = pd.read_csv('data/processed/accounts.csv')
+    return df_transactions, df_accounts
+
+df_transactions, df_accounts = load_to_pd()
 # data types and nulls - to convert and fill null values
 df_transactions.info()
 
@@ -36,9 +41,14 @@ df_accounts.info()
 # 3   Entity ID       object
 # 4   Entity Name     object
 
-# check for NULLS -> no null values
-df_transactions.isnull().sum() 
-df_accounts.isnull().sum()
+# check for nulls -> no null values
+def check_nulls(df):
+    nulls = df.isnull().sum()
+    logging.info(f'Nulls values in: \n{nulls}')
+    if nulls.empty:
+        logging.info(f'No Null values in dataset')
+
+check_nulls(df_transactions)
 
 # Check for number of unique values in categorical variables
 for col in df_accounts.select_dtypes(include='object'):
@@ -51,15 +61,13 @@ df_transactions = df_transactions.drop_duplicates()
 # DATA FORMATING
 
 # As there are some text columns, is best to standardize, (for example, in case of a typo, extra spaces, or caps)
-df_accounts.tail()
-df_transactions.tail()
+def clean_text_columns(df):
+    for col in df.select_dtypes(include='object'):
+        df[col] = df[col].str.strip().str.lower()
+    return df
 
-for col in df_accounts.select_dtypes(include='object'):
-    df_accounts[col] = df_accounts[col].str.strip().str.lower()
-
-for col in df_transactions.select_dtypes(include='object'):
-    df_transactions[col] = df_transactions[col].str.strip().str.lower()
-
+clean_text_columns(df_transactions)
+clean_text_columns(df_accounts)
 
 df_merged = df_transactions.merge(df_accounts, left_on='Account', right_on='Account Number', how='left')
 df_merged
