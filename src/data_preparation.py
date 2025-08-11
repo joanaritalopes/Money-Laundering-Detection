@@ -44,9 +44,9 @@ df_accounts.isnull().sum()
 for col in df_accounts.select_dtypes(include='object'):
     print(col, df_accounts[col].nunique())
 
-# Check for duplicates -> there are 17 transcations duplicated
-df_transactions[df_transactions.duplicated()]
-
+# Check for duplicates -> remove the 17 transcations duplicated as it can skew the models
+df_transactions.loc[df_transactions.duplicated()]
+df_transactions = df_transactions.drop_duplicates()
 
 # DATA FORMATING
 
@@ -64,7 +64,7 @@ for col in df_transactions.select_dtypes(include='object'):
 df_merged = df_transactions.merge(df_accounts, left_on='Account', right_on='Account Number', how='left')
 df_merged
 
-# Check for outliers in the transaction amount -> given that I am trying to detect for fraudulent spikes, suspicious account activity, unusual transaction,
+# Detect outliers in the transaction amount -> given that I am trying to detect for fraudulent spikes, suspicious account activity, unusual transaction,
 # and those outliers might be a sign of thay, will not remove them. such patterns might be useful to train the models
 
 plt.boxplot(df_merged['Amount Paid'])
@@ -86,3 +86,7 @@ df_merged['is_outlier'] = (
 
 # Check the outliers rows
 df_merged.loc[df_merged['is_outlier'] == 1].tail()
+
+# Fix data types
+
+# Correct obvious errors - negative amount transaction, transaction with dates in the future
