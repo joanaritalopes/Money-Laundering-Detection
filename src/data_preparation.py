@@ -72,21 +72,24 @@ plt.title('Box Plot of Transactions')
 plt.show()
 
 # Instead of removing the outliers, we will flag them by adding a binary column using Interquartile Range Method
-q1 = df_merged['Amount Paid'].quantile(0.25)
-q3 = df_merged['Amount Paid'].quantile(0.75)
-iqr = q3 - q1
-# Determine outlier boundaries
-lower_bound = q1 - 1.5 * iqr
-upper_bound = q3 + 1.5 * iqr
+def flag_outliers(df, col, multiplier=1.5):
+    q1 = df[col].quantile(0.25)
+    q3 = df[col].quantile(0.75)
+    iqr = q3 - q1
+    # Determine outlier boundaries
+    lower_bound = q1 - 1.5 * iqr
+    upper_bound = q3 + 1.5 * iqr
+    df['is_outlier'] = ((df[col] < lower_bound) | (df[col] > upper_bound)).astype(int)
+    return df
 
-df_merged['is_outlier'] = (
-    (df_merged['Amount Paid'] < lower_bound) or
-    (df_merged['Amount Paid'] > upper_bound)
-).astype(int)
+flag_outliers(df_merged, 'Amount Paid')
+df_merged.loc[df_merged['is_outlier'] == 1].tail() # Check the outliers rows
 
-# Check the outliers rows
-df_merged.loc[df_merged['is_outlier'] == 1].tail()
+# Fix data types - dates to timestamp
+----
 
-# Fix data types
+# Data validation and sanity checks for obvious errors - negative amount transaction, transaction with dates in the future
+assert df_transactions['Amount Paid'].min() >= 0, 'Negative transaction amounts found!'
+assert df_transactions['Timestamp'].to_timestamp <= pd.Timestamp.today(), 'Future transactions'
 
-# Correct obvious errors - negative amount transaction, transaction with dates in the future
+
