@@ -1,6 +1,6 @@
-# 4. EDA
 # 5. Feature Engineering
 
+from src.data_preparation import df_merged
 
 # Instead of removing the outliers, we will flag them by adding a binary column using Interquartile Range Method
 def flag_outliers(df, col, multiplier=1.5):
@@ -14,7 +14,7 @@ def flag_outliers(df, col, multiplier=1.5):
     return df
 
 
-#flag_outliers(df_merged, 'Amount Paid')
+flag_outliers(df_merged, 'Amount Paid')
 #df_merged.loc[df_merged['is_outlier'] == 1].tail() # Check the outliers rows
 
 
