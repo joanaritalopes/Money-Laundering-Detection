@@ -12,15 +12,6 @@ class LoadAndClean:
         df = pd.read_csv(input_path)
         return df
 
-    def basic_checks(self, df):
-        print('--------Info--------')
-        print(df.info())
-        print('--------Duplicates--------')
-        print(df.loc[df.duplicated()])
-        print('--------Unique values in categorical variables--------')
-        for col in df.select_dtypes(include='object'):
-            print(col, df[col].nunique())
-
     # check for nulls -> no null values
     def check_nulls(self, df):
         nulls = df.isnull().sum()
@@ -40,14 +31,6 @@ def merge_data(df1, df2, key1, key2, join):
     return df
 
 
-# Detect outliers in the transaction amount -> given that I am trying to detect for fraudulent spikes, suspicious account activity, unusual transaction,
-# and those outliers might be a sign of thay, will not remove them. such patterns might be useful to train the models
-def make_boxplot(df, col):
-    plt.boxplot(df[col])
-    plt.title('Box Plot')
-    plt.show()
-
-
 class Transform:
     def data_format(self, df):
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
@@ -55,7 +38,6 @@ class Transform:
         df.drop(columns=['Account.1'])
         df.rename(columns={'Account': 'Account Number'}, inplace =True)
         return df
-
 
 
 # Create the object
@@ -79,7 +61,6 @@ df_merged = merge_data(df_transactions, df_accounts, 'Account', 'Account Number'
 transformer = Transform()
 df_merged = transformer.data_format(df_merged)
 
-make_boxplot(df_merged, 'Amount Paid')
 
 # Data validation and sanity checks for obvious errors - negative amount transaction, transaction with dates in the future
 assert df_merged['Amount Paid'].min() >= 0, 'Negative transaction amounts found!'
