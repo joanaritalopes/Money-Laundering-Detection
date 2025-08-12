@@ -44,13 +44,11 @@ class Transform:
 loader = LoadAndClean()
 
 df_transactions = loader.load_to_pd('data/processed/transactions.csv')
-loader.basic_checks(df_transactions)
 loader.check_nulls(df_transactions)
 df_transactions = loader.clean_text_columns(df_transactions)
 df_transactions.drop_duplicates(df_transactions) # Remove duplicated as it can skew the models
 
 df_accounts = loader.load_to_pd('data/processed/accounts.csv')
-loader.basic_checks(df_accounts)
 loader.check_nulls(df_accounts)
 df_accounts = loader.clean_text_columns(df_accounts)
 

@@ -10,11 +10,13 @@ def flag_outliers(df, col, multiplier=1.5):
     # Determine outlier boundaries
     lower_bound = q1 - 1.5 * iqr
     upper_bound = q3 + 1.5 * iqr
-    df['is_outlier'] = ((df[col] < lower_bound) | (df[col] > upper_bound)).astype(int)
+    df['Is Outlier'] = ((df[col] < lower_bound) | (df[col] > upper_bound)).astype(int)
     return df
 
 
-flag_outliers(df_merged, 'Amount Paid')
+df_merged = flag_outliers(df_merged, 'Amount Paid')
+df_merged.columns
+
 #df_merged.loc[df_merged['is_outlier'] == 1].tail() # Check the outliers rows
 
 
