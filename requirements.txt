@@ -10,6 +10,7 @@ scikit-learn
 scikit-learn
 xgboost        # optional but often effective
 lightgbm       # optional, alternative to xgboost
+imbalanced-learn
 
 # Visualization (optional, for EDA)
 matplotlib

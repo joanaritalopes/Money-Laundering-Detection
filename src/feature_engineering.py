@@ -28,4 +28,17 @@ df_merged.columns
 
 # Scaling & Normalization
 
+# Deal with imbalanced data
+
+#this is an Imbalanced dataset, so SMOTE generate rows for the minority class
+
+# from imblearn.over_sampling import SMOTE
+
+# attrs=df_merged.drop(['Is Laundering'],axis=1)
+# target=df_merged['Is Laundering']
+
+# smote = SMOTE(sampling_strategy='minority')
+# attrs, target  = smote.fit_resample(attrs, target)
+# target.value_counts()
+
 # Train-Test split
