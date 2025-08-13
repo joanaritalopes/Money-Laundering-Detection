@@ -2,7 +2,6 @@
 
 import logging
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(message)s')
@@ -34,9 +33,10 @@ def merge_data(df1, df2, key1, key2, join):
 class Transform:
     def data_format(self, df):
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-        df.drop(columns=['Account Number'])
-        df.drop(columns=['Account.1'])
-        df.rename(columns={'Account': 'Account Number'}, inplace =True)
+        df['From Bank'] = df['From Bank'].astype(str)
+        df['To Bank'] = df['To Bank'].astype(str)
+        df = df.drop(columns=['Account Number','Account.1','Bank ID'])
+        df = df.rename(columns={'Account': 'Account Number'})
         return df
 
 
@@ -64,23 +64,5 @@ df_merged = transformer.data_format(df_merged)
 assert df_merged['Amount Paid'].min() >= 0, 'Negative transaction amounts found!'
 assert (df_merged['Timestamp'] <= pd.Timestamp.today()).any(), 'Found future transactions'
 
-
-df_merged.info()
-
-
-#   Column              Dtype         
-# ---  ------              -----         
-#  0   Timestamp           datetime64[ns]
-#  1   From Bank           int64         
-#  2   Account Number      object        
-#  3   To Bank             int64         
-#  4   Amount Received     float64       
-#  5   Receiving Currency  object        
-#  6   Amount Paid         float64       
-#  7   Payment Currency    object        
-#  8   Payment Format      object        
-#  9   Is Laundering       int64         
-#  10  Bank Name           object        
-#  11  Bank ID             int64         
-#  12  Entity ID           object        
-#  13  Entity Name         object 
+# Save as csv to perform EDA
+df_merged.to_csv('data/processed/df_merged.csv', index=False)
