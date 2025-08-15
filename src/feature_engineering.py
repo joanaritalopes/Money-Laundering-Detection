@@ -2,7 +2,7 @@
 
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -56,11 +56,16 @@ X_train, X_test, y_train, y_test = train_test_split(
 #information from the test set is “seen” during encoding which might lead to data leakage.
 # ------------------------------------------------------------------------------------------------------------------
 
+# Numerical data is right-skwed and it has outliers which decided not to remove them
+# StandardScaler uses mean and std. is sensible to 
+# MinMaxScaler uses min and max and scales the features in that range. Sensitive to outliers. Not robust to outliers. Preserves the original distribution shape
+# RobustScaler uses median and IQR instead of mean and std. less sensitive to outliers
+
 # Encode categorical variables + Scale numerical variables
 preprocessor = ColumnTransformer(
     transformers=[
         ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols),
-        ('num', StandardScaler(), numerical_cols)
+        ('num', RobustScaler(), numerical_cols)
     ]
 )
 
@@ -71,7 +76,7 @@ X_train_encoded = preprocessor.fit_transform(X_train)
 
 X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train) # type: ignore
 
-y_train_res.value_counts() # 9 785 635 each
+y_train_res.value_counts() # 9 785 635 each 'Is Laundering'
 
 X_test_transformed = preprocessor.transform(X_test) # Transform test set - no SMOTE on test
 
