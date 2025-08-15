@@ -1,6 +1,6 @@
 # 5. Feature Engineering
 
-import pandas as pd
+
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.model_selection import train_test_split
@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from imblearn.over_sampling import SMOTE
-from imblearn.pipeline import Pipeline
+
 
 from src.data_preparation import df_final
 
@@ -33,18 +33,40 @@ df_final.loc[df_final['Is Outlier'] == 1].tail() # Check the outliers rows
 
 df = df_final.copy()
 
+def feature_eng_train_test(df):
+    '''Split, encode, scale, and apply SMOTE to training set.'''
 
-# Split features from target variables
-categorical_cols = [col for col in df.columns if df[col].dtype == 'object']
-numerical_cols = [col for col in df.columns if df[col].dtype != 'object' and col != 'Is Laundering']
-TARGET_COL = 'Is Laundering'
+    # Split features from target variables
+    categorical_cols = [col for col in df.columns if df[col].dtype == 'object']
+    numerical_cols = [col for col in df.columns if df[col].dtype != 'object' and col != 'Is Laundering']
+    TARGET = 'Is Laundering'
 
-# Split into train/test
-X = df.drop(columns=[TARGET_COL], axis=1)
-y = df[TARGET_COL]
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y
-)
+    # Split into train/test
+    X = df.drop(columns=[TARGET], axis=1)
+    y = df[TARGET]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+    # Encode categorical variables + Scale numerical variables
+    preprocessor_pipeline = ColumnTransformer(
+        transformers=[
+            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols),
+            ('num', RobustScaler(), numerical_cols)
+        ]
+    )
+
+    # Apply preprocessing + SMOTE on train set
+    X_train_encoded = preprocessor_pipeline.fit_transform(X_train)
+    smote = SMOTE(sampling_strategy='minority', random_state=42)
+    X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train) # type: ignore
+
+    # Transform test
+    X_test_transformed = preprocessor_pipeline.transform(X_test) # Transform test set - no SMOTE on test
+
+    return X_train_transformed, y_train_res, X_test_transformed, y_test, preprocessor_pipeline
+
+
+X_train_transformed, y_train_res, X_test_transformed, y_test, preprocessor_pipeline = feature_eng_train_test(df)
+y_train_res.value_counts() # 9 785 635 each 'Is Laundering'
 
 # ------------------------------------------------------------------------------------------------------------------
 # Encode categorical variables: There is many approaches and it depends on the models that we plan to use afterwards
@@ -61,24 +83,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 # MinMaxScaler uses min and max and scales the features in that range. Sensitive to outliers. Not robust to outliers. Preserves the original distribution shape
 # RobustScaler uses median and IQR instead of mean and std. less sensitive to outliers
 
-# Encode categorical variables + Scale numerical variables
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols),
-        ('num', RobustScaler(), numerical_cols)
-    ]
-)
 
-smote = SMOTE(sampling_strategy='minority', random_state=42)
 
-# Apply preprocessing + SMOTE on train set
-X_train_encoded = preprocessor.fit_transform(X_train)
-
-X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train) # type: ignore
-
-y_train_res.value_counts() # 9 785 635 each 'Is Laundering'
-
-X_test_transformed = preprocessor.transform(X_test) # Transform test set - no SMOTE on test
 
 
 # -------------------
@@ -96,12 +102,3 @@ for name, model in models.items():
     print(f"{name} test accuracy: {score:.4f}")
 
 
-# Approach for the decided model
-
-# pipeline = Pipeline(
-#     steps=[
-#         ('preprocessor', preprocessor),
-#         ('smote', SMOTE(random_state=42)), # Deal with imbalanced data - generate rows for the minority class
-#         ('model', RandomForestClassifier(random_state=42))
-#     ]
-# )
