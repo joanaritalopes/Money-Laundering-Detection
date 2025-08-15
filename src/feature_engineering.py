@@ -58,12 +58,12 @@ def feature_eng_train_test(df):
     # Apply preprocessing + SMOTE on train set
     X_train_encoded = feature_transformer.fit_transform(X_train)
     smote = SMOTE(sampling_strategy='minority', random_state=42)
-    X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train) # type: ignore
+    X_train_transformed, y_train_resampled = smote.fit_resample(X_train_encoded, y_train) # type: ignore
 
     # Transform test
     X_test_transformed = feature_transformer.transform(X_test) # Transform test set - no SMOTE on test
-    
-    return X_train_transformed, y_train_res, X_test_transformed, y_test, feature_transformer
+
+    return X_train_transformed, y_train_resampled, X_test_transformed, y_test, feature_transformer
 
 
 X_train, y_train, X_test, y_test, feature_transformer = feature_eng_train_test(df)
