@@ -69,11 +69,9 @@ smote = SMOTE(sampling_strategy='minority', random_state=42)
 # Apply preprocessing + SMOTE on train set
 X_train_encoded = preprocessor.fit_transform(X_train)
 
-X_train_encoded = pd.DataFrame(preprocessor.fit_transform(X_train), columns=preprocessor.get_feature_names_out())
+X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train) # type: ignore
 
-X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train)
-
-y_train_res.value_counts()
+y_train_res.value_counts() # 9 785 635 each
 
 X_test_transformed = preprocessor.transform(X_test) # Transform test set - no SMOTE on test
 
