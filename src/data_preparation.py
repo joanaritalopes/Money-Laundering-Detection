@@ -38,6 +38,15 @@ class Transform:
         df = df.drop(columns=['Account Number','Account.1','Bank ID'])
         df = df.rename(columns={'Account': 'Account Number'})
         return df
+    
+    def date_format(self, df):
+        for col in ['Timestamp']:
+            df[col + '_year'] = df[col].dt.year
+            df[col + '_month'] = df[col].dt.month
+            df[col + '_day'] = df[col].dt.day
+            df[col + '_weekday'] = df[col].dt.weekday
+        df = df.drop(columns=['Timestamp'])
+        return df
 
 
 # Create the object
@@ -59,10 +68,11 @@ df_merged = merge_data(df_transactions, df_accounts, 'Account', 'Account Number'
 transformer = Transform()
 df_merged = transformer.data_format(df_merged)
 
-
 # Data validation and sanity checks for obvious errors - negative amount transaction, transaction with dates in the future
 assert df_merged['Amount Paid'].min() >= 0, 'Negative transaction amounts found!'
 assert (df_merged['Timestamp'] <= pd.Timestamp.today()).any(), 'Found future transactions'
 
+df_final = transformer.date_format(df_merged)
+
 # Save as csv to perform EDA
-df_merged.to_csv('data/processed/df_merged.csv', index=False)
+df_final.to_csv('data/processed/df_final.csv', index=False)
