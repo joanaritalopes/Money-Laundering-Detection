@@ -44,29 +44,30 @@ def feature_eng_train_test(df):
     # Split into train/test
     X = df.drop(columns=[TARGET], axis=1)
     y = df[TARGET]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2,
+        random_state=42, stratify=y
+    )
     # Encode categorical variables + Scale numerical variables
-    preprocessor_pipeline = ColumnTransformer(
+    feature_transformer = ColumnTransformer(
         transformers=[
             ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_cols),
             ('num', RobustScaler(), numerical_cols)
-        ]
-    )
-
+        ])
+    
     # Apply preprocessing + SMOTE on train set
-    X_train_encoded = preprocessor_pipeline.fit_transform(X_train)
+    X_train_encoded = feature_transformer.fit_transform(X_train)
     smote = SMOTE(sampling_strategy='minority', random_state=42)
     X_train_transformed, y_train_res = smote.fit_resample(X_train_encoded, y_train) # type: ignore
 
     # Transform test
-    X_test_transformed = preprocessor_pipeline.transform(X_test) # Transform test set - no SMOTE on test
+    X_test_transformed = feature_transformer.transform(X_test) # Transform test set - no SMOTE on test
+    
+    return X_train_transformed, y_train_res, X_test_transformed, y_test, feature_transformer
 
-    return X_train_transformed, y_train_res, X_test_transformed, y_test, preprocessor_pipeline
 
-
-X_train_transformed, y_train_res, X_test_transformed, y_test, preprocessor_pipeline = feature_eng_train_test(df)
-y_train_res.value_counts() # 9 785 635 each 'Is Laundering'
+X_train, y_train, X_test, y_test, feature_transformer = feature_eng_train_test(df)
+y_train.value_counts() # 9 785 635 each 'Is Laundering'
 
 # ------------------------------------------------------------------------------------------------------------------
 # Encode categorical variables: There is many approaches and it depends on the models that we plan to use afterwards
