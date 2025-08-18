@@ -1,5 +1,3 @@
-# 5. Feature Engineering
-# 6. Feature Selection
 
 import pandas as pd
 
@@ -14,6 +12,10 @@ from imblearn.over_sampling import SMOTE
 
 from src.data_preparation import df_final
 
+# -----------------------------
+# Feature Engineering
+# -----------------------------
+
 # Instead of removing the outliers, we will flag them by adding a binary column using Interquartile Range Method
 def flag_outliers(df, col, multiplier=1.5):
     q1 = df[col].quantile(0.25)
@@ -27,11 +29,6 @@ def flag_outliers(df, col, multiplier=1.5):
 
 df_final = flag_outliers(df_final, 'Amount Paid')
 df_final.loc[df_final['Is Outlier'] == 1].tail() # Check the outliers rows
-
-# 'Timestamp', 'From Bank', 'Account Number', 'To Bank',
-    # 'Amount Received', 'Receiving Currency', 'Amount Paid',
-    # 'Payment Currency', 'Payment Format', 'Is Laundering', 'Bank Name',
-    # 'Entity ID', 'Entity Name', 'Is Outlier'
 
 df = df_final.copy()
 
@@ -52,6 +49,9 @@ def features_train_test(df, target_col='Is Laundering'):
 
     return X_train, X_test, y_train, y_test
 
+# -----------------------------
+# Encode and Scale variables
+# -----------------------------
 def features_transformation(X_train, X_test, y_train, y_test):
     '''Encode, scale, and apply SMOTE to training set.'''
 
@@ -83,6 +83,9 @@ X_train, y_train, X_test, y_test = features_transformation(X_train, X_test, y_tr
 # 9 785 635 each 'Is Laundering'
 
 
+# -----------------------------
+# Feature Importance and Selection
+# -----------------------------
 
 # Tree-based feature importance
 rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
@@ -103,6 +106,18 @@ model.fit(X_train, y_train)
 selected_features = X_train.columns[model.coef_[0] != 0]
 
 
+
+# -----------------------------
+# Notes
+# -----------------------------
+
+
+# 'Timestamp', 'From Bank', 'Account Number', 'To Bank',
+    # 'Amount Received', 'Receiving Currency', 'Amount Paid',
+    # 'Payment Currency', 'Payment Format', 'Is Laundering', 'Bank Name',
+    # 'Entity ID', 'Entity Name', 'Is Outlier'
+
+
 # --------------------------
 # Encode categorical variables: There is many approaches and it depends on the models that we plan to use afterwards
 #   One-hot encoding -> increases dimensionality, SMOTE might create unrealistic combinations for high-cardinality features -> for distance-based or linear models (LogisticRegression, SVM, KNN)
@@ -114,6 +129,6 @@ selected_features = X_train.columns[model.coef_[0] != 0]
 #   RobustScaler: uses median and IQR instead of mean and std. less sensitive to outliers
 
 # --------------------------
-# As data is already splitted into train/test because while fitting an encoder on the entire dataset before, 
-#information from the test set is “seen” during encoding which might lead to data leakage.
+# As data is already splitted into train/test because while fitting an encoder on the entire dataset before information from the test set 
+# is “seen” during encoding which might lead to data leakage.
 # Numerical data is right-skwed and it has outliers which decided not to remove them
