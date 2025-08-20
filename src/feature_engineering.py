@@ -1,4 +1,5 @@
 
+from typing import Tuple
 import pandas as pd
 
 from sklearn.compose import ColumnTransformer
@@ -16,19 +17,44 @@ from src.data_preparation import df_final
 # Feature Engineering
 # -----------------------------
 
-# Instead of removing the outliers, we will flag them by adding a binary column using Interquartile Range Method
-def flag_outliers(df, col, multiplier=1.5):
+
+def flag_outliers(df: pd.DataFrame, col: str):
+    '''
+    Instead of removing the outliers, flag outliers in a numeric column using IQR method.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The input DataFrame containing the column to check.
+    col : str
+        Name of the numeric column to analyze for outliers.
+    multiplier : float, optional
+        The factor to multiply the IQR by to determine outlier bounds
+        (default is 1.5).
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with a new column 'Is Outlier' (1 if the row is an outlier, else 0).
+    '''
+
     q1 = df[col].quantile(0.25)
     q3 = df[col].quantile(0.75)
     iqr = q3 - q1
+
     # Determine outlier boundaries
     lower_bound = q1 - 1.5 * iqr
     upper_bound = q3 + 1.5 * iqr
-    df['Is Outlier'] = ((df[col] < lower_bound) | (df[col] > upper_bound)).astype(int)
+
+    df['Is Outlier'] = (
+        (df[col] < lower_bound) | (
+            df[col] > upper_bound)).astype(int)
+
     return df
 
+
 df_final = flag_outliers(df_final, 'Amount Paid')
-df_final.loc[df_final['Is Outlier'] == 1].tail() # Check the outliers rows
+df_final.loc[df_final['Is Outlier'] == 1].tail()  # Check the outliers rows
 
 df = df_final.copy()
 
@@ -49,11 +75,33 @@ def features_train_test(df, target_col='Is Laundering'):
 
     return X_train, X_test, y_train, y_test
 
+
 # -----------------------------
 # Encode and Scale variables
 # -----------------------------
-def features_transformation(X_train, X_test, y_train, y_test):
-    '''Encode, scale, and apply SMOTE to training set.'''
+def features_transformation(
+    X_train: pd.DataFrame,
+    X_test: pd.DataFrame,
+    y_train: pd.Series,
+    y_test: pd.Series
+):
+    '''
+    Encode, scale, and apply SMOTE to training set.
+
+    Parameters
+    ----------
+    x_train: pandas.DataFrame with training features.
+    x_test: pandas.DataFrame with training features.
+    y_train: pandas.Series with training target.
+    y_test: pandas.Series with test target.
+
+    Returns
+    -------
+    x_train_transformed: Transformed and SMOTE-resampled training features.
+    y_train_resampled: Resampled training target.
+    x_test_transformed: Transformed test features (no SMOTE applied).
+    y_test: Original test target (unchanged).
+    '''
 
     # Split features from target variables
     cat_cols = [col for col in df.columns if df[col].dtype == 'object']
@@ -65,14 +113,16 @@ def features_transformation(X_train, X_test, y_train, y_test):
             ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols),
             ('num', RobustScaler(), num_cols)
         ])
-    
+
     # Apply preprocessing + SMOTE on train set
     X_train_encoded = preprocessor.fit_transform(X_train)
     smote = SMOTE(sampling_strategy='minority', random_state=42)
-    X_train_transformed, y_train_resampled = smote.fit_resample(X_train_encoded, y_train) # type: ignore
+    X_train_transformed, y_train_resampled = smote.fit_resample(
+        X_train_encoded, y_train)  # type: ignore
 
     # Transform test
-    X_test_transformed = preprocessor.transform(X_test) # Transform test set - no SMOTE on test
+    X_test_transformed = preprocessor.transform(
+        X_test)  # Transform test set - no SMOTE on test
 
     return X_train_transformed, y_train_resampled, X_test_transformed, y_test
 
@@ -107,16 +157,15 @@ importances = rf.feature_importances_
 feature_ranking = pd.DataFrame(importances).sort_values(by='importance', ascending=False)
 
 
-
 # -----------------------------
 # Notes
 # -----------------------------
 
 
 # 'Timestamp', 'From Bank', 'Account Number', 'To Bank',
-    # 'Amount Received', 'Receiving Currency', 'Amount Paid',
-    # 'Payment Currency', 'Payment Format', 'Is Laundering', 'Bank Name',
-    # 'Entity ID', 'Entity Name', 'Is Outlier'
+# 'Amount Received', 'Receiving Currency', 'Amount Paid',
+# 'Payment Currency', 'Payment Format', 'Is Laundering', 'Bank Name',
+# 'Entity ID', 'Entity Name', 'Is Outlier'
 
 
 # 9 785 635 'Is Laundering'
@@ -127,11 +176,13 @@ feature_ranking = pd.DataFrame(importances).sort_values(by='importance', ascendi
 #   Ordinal encoding -> imposes an artificial order that may mislead models that assume distance is meaningful -> for tree-based models because they don’t assume numeric distance meaning
 #   Target/Mean Encoding -> replaces categories with statistics from the target
 # Encode numerical variables
-#   StandardScaler: uses mean and std. is sensible to 
+#   StandardScaler: uses mean and std. is sensible to
 #   MinMaxScaler: uses min and max and scales the features in that range. Sensitive to outliers. Not robust to outliers. Preserves the original distribution shape
-#   RobustScaler: uses median and IQR instead of mean and std. less sensitive to outliers
+# RobustScaler: uses median and IQR instead of mean and std. less
+# sensitive to outliers
 
 # --------------------------
-# As data is already splitted into train/test because while fitting an encoder on the entire dataset before information from the test set 
+# As data is already splitted into train/test because while fitting an encoder on the entire dataset before information from the test set
 # is “seen” during encoding which might lead to data leakage.
-# Numerical data is right-skwed and it has outliers which decided not to remove them
+# Numerical data is right-skwed and it has outliers which decided not to
+# remove them
