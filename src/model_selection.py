@@ -26,7 +26,9 @@ from src.feature_engineering import (
     features_transformation
 )
 
-X_train, y_train, X_test, y_test, feature_transformer = feature_eng_train_test(df_final)
+
+X_train, X_test, y_train, y_test = features_train_test(df_final)
+X_train, y_train, X_test, y_test = features_transformation(X_train, X_test, y_train, y_test)
 X_train.columns
 
 

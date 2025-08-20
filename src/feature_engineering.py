@@ -82,28 +82,29 @@ X_train, y_train, X_test, y_test = features_transformation(X_train, X_test, y_tr
 
 # 9 785 635 each 'Is Laundering'
 
-
 # -----------------------------
 # Feature Importance and Selection
 # -----------------------------
 
-# Tree-based feature importance
-rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
-rf.fit(X_train, y_train)
-importances = rf.feature_importances_
-feature_ranking = pd.DataFrame(importances).sort_values(by='importance', ascending=False)
-
-
-# Recursive Feature Elimination to select top k features
-rfe_selector = RFE(rf, n_features_to_select=15, step=10)
+# Wrapper Methods: Recursive Feature Elimination using models that provide feature importance (tree-based or linear models)
+# RFE
+rf_rfe = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
+rfe_selector = RFE(rf_rfe, n_features_to_select=15, step=10)
 rfe_selector.fit(X_train, y_train)
 selected_features = X_train.columns[rfe_selector.support_]
 
 
-# Feature Selection with Regularization -> L1 (Lasso) regularization
+#  Embedded Methods: feature selection is during the model training
+# Feature Selection with Regularization -> L1 (Lasso) regularization (for numerical feature/linear models)
 model = LogisticRegression(penalty='l1', solver='liblinear')
 model.fit(X_train, y_train)
 selected_features = X_train.columns[model.coef_[0] != 0]
+
+# Tree-based feature importance (numerical and categorical features, non-linear relationships)
+rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
+rf.fit(X_train, y_train)
+importances = rf.feature_importances_
+feature_ranking = pd.DataFrame(importances).sort_values(by='importance', ascending=False)
 
 
 
@@ -117,6 +118,8 @@ selected_features = X_train.columns[model.coef_[0] != 0]
     # 'Payment Currency', 'Payment Format', 'Is Laundering', 'Bank Name',
     # 'Entity ID', 'Entity Name', 'Is Outlier'
 
+
+# 9 785 635 'Is Laundering'
 
 # --------------------------
 # Encode categorical variables: There is many approaches and it depends on the models that we plan to use afterwards
