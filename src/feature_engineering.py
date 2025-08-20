@@ -1,15 +1,13 @@
-
 from typing import Tuple
 import pandas as pd
 
+from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.model_selection import train_test_split
-from sklearn.feature_selection import RFE
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.feature_selection import RFE
 from imblearn.over_sampling import SMOTE
-
 
 from src.data_preparation import df_final
 
@@ -18,7 +16,7 @@ from src.data_preparation import df_final
 # -----------------------------
 
 
-def flag_outliers(df: pd.DataFrame, col: str):
+def flag_outliers(df: pd.DataFrame, col: str) -> pd.DataFrame:
     '''
     Instead of removing the outliers, flag outliers in a numeric column using IQR method.
 
@@ -28,14 +26,10 @@ def flag_outliers(df: pd.DataFrame, col: str):
         The input DataFrame containing the column to check.
     col : str
         Name of the numeric column to analyze for outliers.
-    multiplier : float, optional
-        The factor to multiply the IQR by to determine outlier bounds
-        (default is 1.5).
 
     Returns
     -------
-    pandas.DataFrame
-        DataFrame with a new column 'Is Outlier' (1 if the row is an outlier, else 0).
+    pd.DataFrame with a new column 'Is Outlier' (1 if the row is an outlier, else 0).
     '''
 
     q1 = df[col].quantile(0.25)
@@ -62,8 +56,24 @@ df = df_final.copy()
 # -----------------------------
 # Split into train/test
 # -----------------------------
-def features_train_test(df, target_col='Is Laundering'):
-    '''Split to train and test set.'''
+def features_train_test(df: pd.DataFrame, target_col: str = 'Is Laundering'
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+    '''
+    Splits dataframe into train and test sets.
+    
+    Parameters
+    ----------
+    pd.DataFrame: Input dataset including features and target.
+    target_col : str, optional
+        Name of the target column (default is 'Is Laundering').
+
+    Returns
+    -------
+    X_train : Training features.
+    X_test : Test features.
+    y_train : Training target.
+    y_test : Test target.
+    '''
 
     # Split into train/test
     X = df.drop(columns=[target_col], axis=1)
@@ -77,14 +87,14 @@ def features_train_test(df, target_col='Is Laundering'):
 
 
 # -----------------------------
-# Encode and Scale variables
+# Encode and Scale features
 # -----------------------------
 def features_transformation(
     X_train: pd.DataFrame,
     X_test: pd.DataFrame,
     y_train: pd.Series,
     y_test: pd.Series
-):
+) -> Tuple:
     '''
     Encode, scale, and apply SMOTE to training set.
 
@@ -114,21 +124,52 @@ def features_transformation(
             ('num', RobustScaler(), num_cols)
         ])
 
-    # Apply preprocessing + SMOTE on train set
+    # Apply preprocessing on train set
     X_train_encoded = preprocessor.fit_transform(X_train)
+
+    # Convert to DataFrame with column names
+    X_train_df = pd.DataFrame(
+        X_train_encoded.toarray() if hasattr(X_train_encoded, "toarray") else X_train_encoded,
+        columns=preprocessor.get_feature_names_out()
+    )
+
+    # Apply preprocessing on test set
+    X_test_encoded = preprocessor.transform(X_test)
+    X_test_df = pd.DataFrame(
+        X_test_encoded.toarray() if hasattr(X_test_encoded, "toarray") else X_test_encoded,
+        columns=preprocessor.get_feature_names_out()
+    )
+
+    return X_train_df, X_test_df, y_train, y_test
+
+
+# -----------------------------
+# Apply SMOTE after feature selection
+# -----------------------------
+def apply_smote(
+    X_train,
+    y_train
+) -> Tuple:
+    '''
+    Resample the training set with SMOTE.
+    '''
+
     smote = SMOTE(sampling_strategy='minority', random_state=42)
-    X_train_transformed, y_train_resampled = smote.fit_resample(
-        X_train_encoded, y_train)  # type: ignore
+    X_train_transformed, y_train_resampled = smote.fit_resample(X_train, y_train)
 
-    # Transform test
-    X_test_transformed = preprocessor.transform(
-        X_test)  # Transform test set - no SMOTE on test
+    # Convert back to DataFrame
+    X_train_transformed_df = pd.DataFrame(X_train_transformed, columns=X_train.columns)
 
-    return X_train_transformed, y_train_resampled, X_test_transformed, y_test
+    return X_train_transformed_df, y_train_resampled
 
 
 X_train, X_test, y_train, y_test = features_train_test(df)
 X_train, y_train, X_test, y_test = features_transformation(X_train, X_test, y_train, y_test)
+
+# Apply SMOTE
+X_train_final, y_train_final = apply_smote(X_train, y_train)
+
+print(X_train)
 
 # 9 785 635 each 'Is Laundering'
 
@@ -144,8 +185,8 @@ rfe_selector.fit(X_train, y_train)
 selected_features = X_train.columns[rfe_selector.support_]
 
 
-#  Embedded Methods: feature selection is during the model training
-# Feature Selection with Regularization -> L1 (Lasso) regularization (for numerical feature/linear models)
+# Embedded Methods: feature selection is during the model training
+# L1 Regularization (Lasso) for numerical feature/linear models
 model = LogisticRegression(penalty='l1', solver='liblinear')
 model.fit(X_train, y_train)
 selected_features = X_train.columns[model.coef_[0] != 0]
@@ -154,7 +195,10 @@ selected_features = X_train.columns[model.coef_[0] != 0]
 rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
 rf.fit(X_train, y_train)
 importances = rf.feature_importances_
-feature_ranking = pd.DataFrame(importances).sort_values(by='importance', ascending=False)
+feature_ranking = pd.DataFrame({
+    'feature': X_train.columns,
+    'importance': importances
+}).sort_values(by='importance', ascending=False)
 
 
 # -----------------------------
