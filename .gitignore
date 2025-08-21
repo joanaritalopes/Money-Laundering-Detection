@@ -147,6 +147,8 @@ pyenv/
 
 # Data files
 data/
+data/raw/*
+data/processed/*
 .DS_Store
 
 # Rope project settings
