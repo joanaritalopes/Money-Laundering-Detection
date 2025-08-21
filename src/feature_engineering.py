@@ -289,4 +289,4 @@ X_test_df = pd.DataFrame(
 # Encode numerical variables
 #   StandardScaler: uses mean and std. is sensible to
 #   MinMaxScaler: uses min and max and scales the features in that range. Sensitive to outliers. Not robust to outliers. Preserves the original distribution shape
-#   RobustScaler: uses median and IQR instead of mean and std. less sensitive to outliers
+# RobustScaler: uses median and IQR instead of mean and std. less sensitive to outliers
