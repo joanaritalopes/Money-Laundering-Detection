@@ -1,6 +1,6 @@
 # Anti-Money Laundering detection with Machine Learning
 
-This project applies machine learning to detect money laundering / fraud transactions from a banking dataset.
+This project applies machine learning to detect fraud transactions from a banking dataset.
 It demonstrates a complete ML workflow from data preparation → feature engineering → feature selection → handling imbalance with SMOTE → model training → model evaluation.
 
 # Workflow
