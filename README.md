@@ -61,8 +61,3 @@ It demonstrates a complete ML workflow from data preparation → feature enginee
 	•	Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
     •	Experiment with different features
 	•	Create Unit tests for code expected behavior validation
-<<<<<<< HEAD
-	
- 
-=======
->>>>>>> 4aec79d (pylint fix)
