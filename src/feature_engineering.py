@@ -15,6 +15,7 @@ from src.data_preparation import df_final
 # Feature Engineering
 # -------------------
 
+
 def flag_outliers(df: pd.DataFrame, col: str) -> pd.DataFrame:
     '''
     Instead of removing the outliers, flag outliers in a numeric column using IQR method.
@@ -56,11 +57,14 @@ df = df_final.copy()
 # Split into train/test
 # -----------------------------
 
-def features_train_test(df: pd.DataFrame, target_col: str = 'Is Laundering'
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def features_train_test(df: pd.DataFrame,
+                        target_col: str = 'Is Laundering') -> Tuple[pd.DataFrame,
+                                                                    pd.DataFrame,
+                                                                    pd.Series,
+                                                                    pd.Series]:
     '''
     Splits dataframe into train and test sets.
-    
+
     Parameters
     ----------
     pd.DataFrame: Input dataset including features and target.
@@ -109,8 +113,10 @@ def features_transformation(
     '''
 
     # Split features from target variables
-    cat_cols = [col for col in X_train.columns if X_train[col].dtype == 'object']
-    num_cols = [col for col in X_train.columns if X_train[col].dtype != 'object' and col != 'Is Laundering']
+    cat_cols = [
+        col for col in X_train.columns if X_train[col].dtype == 'object']
+    num_cols = [col for col in X_train.columns if X_train[col].dtype !=
+                'object' and col != 'Is Laundering']
 
     # Encode categorical variables + Scale numerical variables
     preprocessor = ColumnTransformer(
@@ -130,16 +136,19 @@ def features_transformation(
 # Feature Importance and Selection
 # --------------------------------
 
-# Wrapper Methods: Recursive Feature Elimination using models that provide feature importance (tree-based or linear models)
-def rfe_feature_selection(X_train: pd.DataFrame, y_train: pd.Series) -> List[str]:
+# Wrapper Methods: Recursive Feature Elimination using models that provide
+# feature importance (tree-based or linear models)
+def rfe_feature_selection(
+        X_train: pd.DataFrame,
+        y_train: pd.Series) -> List[str]:
     '''
     Recursive Feature Elimination (RFE) using Random Forest.
-    
+
     Parameters
     ----------
     X : pd.DataFrame Feature matrix.
     y : pd.Series Target vector.
-    
+
     Returns
     -------
     List[str] of selected feature names.
@@ -153,9 +162,11 @@ def rfe_feature_selection(X_train: pd.DataFrame, y_train: pd.Series) -> List[str
 
 
 # Embedded Methods: feature selection is during the model training
-def l1_feature_selection(X_train: pd.DataFrame, y_train: pd.Series) -> List[str]:
+def l1_feature_selection(
+        X_train: pd.DataFrame,
+        y_train: pd.Series) -> List[str]:
     '''
-    Perform feature selection using L1-regularization (LASSO) Logistic Regression 
+    Perform feature selection using L1-regularization (LASSO) Logistic Regression
     for numerical feature/linear models.
 
     Parameters
@@ -175,16 +186,18 @@ def l1_feature_selection(X_train: pd.DataFrame, y_train: pd.Series) -> List[str]
     return X_train.columns[lr.coef_[0] != 0].tolist()
 
 
-def tree_feature_importance(X_train: pd.DataFrame, y_train: pd.Series) -> pd.DataFrame:
+def tree_feature_importance(
+        X_train: pd.DataFrame,
+        y_train: pd.Series) -> pd.DataFrame:
     '''
-    Compute feature importance using Random Forest. A Tree-based feature 
+    Compute feature importance using Random Forest. A Tree-based feature
     importance (numerical and categorical features, non-linear relationships).
-    
+
     Parameters
     ----------
     X : pd.DataFrame Feature matrix.
     y : pd.Series Target vector.
-    
+
     Returns
     -------
     pd.DataFrame with 'feature' and 'importance' columns sorted descending.
@@ -226,7 +239,7 @@ def apply_smote(
     '''
 
     smote = SMOTE(sampling_strategy='minority', random_state=42)
-    X_selected = X_train[selected_features] 
+    X_selected = X_train[selected_features]
     X_train, y_train = smote.fit_resample(X_selected, y_train)
 
     # Convert back to DataFrame
@@ -248,34 +261,26 @@ rfe_features = rfe_feature_selection(X_train, y_train)
 print(rfe_features)
 
 # Apply SMOTE
-X_train_final, y_train_final = apply_smote(X_train, y_train) # after oversampling 9 785 635 each 'Is Laundering'
-
+# after oversampling 9 785 635 each 'Is Laundering'
+X_train_final, y_train_final = apply_smote(X_train, y_train)
 
 
 # ---------------------------------
 # Final data with selected features
 # ---------------------------------
 
-# Get the names of the selected features
-selected_feature_indices = selector.get_support(indices=True)
-selected_feature_names = preprocessor.get_feature_names_out()[selected_feature_indices]
-
-# Convert to DataFrame
-X_train_df = pd.DataFrame(X_train_selected.toarray(), columns=selected_feature_names)
-X_test_df = pd.DataFrame(X_test_selected.toarray(), columns=selected_feature_names)
+# Get the names of the selected features and Convert to DataFrame
+X_train_df = pd.DataFrame(
+    X_train_selected.toarray(),
+    columns=selected_feature_names)
+X_test_df = pd.DataFrame(
+    X_test_selected.toarray(),
+    columns=selected_feature_names)
 
 # -----------------------------
 # Notes
 # -----------------------------
 
-# 'Timestamp', 'From Bank', 'Account Number', 'To Bank',
-# 'Amount Received', 'Receiving Currency', 'Amount Paid',
-# 'Payment Currency', 'Payment Format', 'Is Laundering', 'Bank Name',
-# 'Entity ID', 'Entity Name', 'Is Outlier'
-
-# 9 785 635 'Is Laundering'
-
-# --------------------------
 # Encode categorical variables: There is many approaches and it depends on the models that we plan to use afterwards
 #   One-hot encoding -> increases dimensionality, SMOTE might create unrealistic combinations for high-cardinality features -> for distance-based or linear models (LogisticRegression, SVM, KNN)
 #   Ordinal encoding -> imposes an artificial order that may mislead models that assume distance is meaningful -> for tree-based models because they don’t assume numeric distance meaning
@@ -284,9 +289,4 @@ X_test_df = pd.DataFrame(X_test_selected.toarray(), columns=selected_feature_nam
 # Encode numerical variables
 #   StandardScaler: uses mean and std. is sensible to
 #   MinMaxScaler: uses min and max and scales the features in that range. Sensitive to outliers. Not robust to outliers. Preserves the original distribution shape
-# RobustScaler: uses median and IQR instead of mean and std. less
-# sensitive to outliers
-
-# --------------------------
-# As data is already splitted into train/test because while fitting an encoder on the entire dataset before no information from the test set is “seen” during encoding which might lead to data leakage.
-
+#   RobustScaler: uses median and IQR instead of mean and std. less sensitive to outliers

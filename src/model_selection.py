@@ -45,15 +45,22 @@ def evaluate_model(model, X_test, y_test):
     print("Recall:", recall_score(y_test, y_pred))
     print("F1-score:", f1_score(y_test, y_pred))
     print("ROC-AUC:", round(roc_auc_score(y_test, y_prob), 3))
-    print("PR-AUC (Average Precision):", round(average_precision_score(y_test, y_prob), 3))
+    print(
+        "PR-AUC (Average Precision):",
+        round(
+            average_precision_score(
+                y_test,
+                y_prob),
+            3))
 
     # Detailed report
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
     # Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Not Fraud', 'Fraud'],
-                yticklabels=['Not Fraud', 'Fraud'])
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[
+        'Not Fraud', 'Fraud'], yticklabels=[
+        'Not Fraud', 'Fraud'])
     plt.xlabel('Predicted')
     plt.ylabel('True')
     plt.title('Confusion Matrix')
@@ -61,9 +68,15 @@ def evaluate_model(model, X_test, y_test):
 
     # ROC Curve
     fpr, tpr, _ = roc_curve(y_test, y_prob)
-    plt.figure(figsize=(5,4))
-    plt.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc_score(y_test, y_prob):.3f})')
-    plt.plot([0,1], [0,1], linestyle='--', color='gray')
+    plt.figure(figsize=(5, 4))
+    plt.plot(
+        fpr,
+        tpr,
+        label=f'ROC curve (AUC = {
+            roc_auc_score(
+                y_test,
+                y_prob):.3f})')
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray')
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")
     plt.title("ROC Curve")
@@ -72,8 +85,14 @@ def evaluate_model(model, X_test, y_test):
 
     # Precision-Recall Curve
     precision, recall, _ = precision_recall_curve(y_test, y_prob)
-    plt.figure(figsize=(5,4))
-    plt.plot(recall, precision, label=f'PR curve (AP = {average_precision_score(y_test, y_prob):.3f})')
+    plt.figure(figsize=(5, 4))
+    plt.plot(
+        recall,
+        precision,
+        label=f'PR curve (AP = {
+            average_precision_score(
+                y_test,
+                y_prob):.3f})')
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.title("Precision-Recall Curve")
@@ -102,13 +121,12 @@ for name, model in models.items():
     evaluate_model(model, X_test, y_test)
 
 
-
 # ---------- Approach for the decided model ----------
 
 # pipeline = Pipeline(
 #     steps=[
 #         ('preprocessor', preprocessor),
-#         ('smote', SMOTE(random_state=42)), # Deal with imbalanced data - generate rows for the minority class
+#         ('smote', SMOTE(random_state=42)), # imbalanced data - generate rows for minority class
 #         ('model', RandomForestClassifier(random_state=42))
 #     ]
 # )
