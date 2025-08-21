@@ -51,4 +51,6 @@ It demonstrates a complete ML workflow from data preparation → feature enginee
  # Next Steps / Improvements
 	•	Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
     •	Experiment with different features
+	•	Create Unit tests for code expected behavior validation
+	
  
