@@ -1,6 +1,4 @@
-# 6. Model Selection
-# 7. Model Training
-# 8. Model Evaluation
+# 6. Model Selection, 7. Model Training, 8. Model Evaluation
 
 from imblearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -28,26 +26,12 @@ from src.feature_engineering import (
 
 
 X_train, X_test, y_train, y_test = features_train_test(df_final)
-X_train, y_train, X_test, y_test = features_transformation(X_train, X_test, y_train, y_test)
-X_train.columns
+X_train, X_test = features_transformation(X_train, X_test)
 
 
-# -------------------
-# Try several models
-# -------------------
-models = {
-    "LogisticRegression": LogisticRegression(max_iter=1000),
-    "RandomForest": RandomForestClassifier(random_state=42),
-    "GradientBoosting": GradientBoostingClassifier(random_state=42),
-    "SVM": SVC(probability=True, random_state=42)
-}
-
-for name, model in models.items():
-    model.fit(X_train, y_train)
-    score = model.score(X_test, y_test)
-    print(f"{name} test accuracy: {score:.4f}")
-
-
+# --------------------------------
+# Try several models and Fine-tune
+# --------------------------------
 
 def evaluate_model(model, X_test, y_test):
     '''
@@ -97,9 +81,30 @@ def evaluate_model(model, X_test, y_test):
     plt.legend()
     plt.show()
 
+    return {
+        "precision": precision_score(y_test, y_pred),
+        "recall": recall_score(y_test, y_pred),
+        "f1": f1_score(y_test, y_pred),
+        "roc_auc": roc_auc_score(y_test, y_prob),
+        "pr_auc": average_precision_score(y_test, y_prob)
+    }
 
 
-# ---------- Evaluation Metrics for Classification ----------
+models = {
+    "LogisticRegression": LogisticRegression(max_iter=1000),
+    "RandomForest": RandomForestClassifier(random_state=42),
+    "GradientBoosting": GradientBoostingClassifier(random_state=42),
+    "SVM": SVC(probability=True, random_state=42)
+}
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    print(f'Model name: {name}')
+    evaluate_model(model, X_test, y_test)
+
+
+
+# ---------- Evaluation Metrics for Classification details ----------
 # Accuracy: % of total correct predictions (correct predictions/total predictions) (balanced)
 # Precison: how many correct out of the predicted positives (when we don't want FP)
 # Recall: how many correct out of the actual positives (when we don't want FN - example: decease detection, fraud detection) -> TP rate
