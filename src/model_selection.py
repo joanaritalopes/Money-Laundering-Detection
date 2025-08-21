@@ -24,7 +24,6 @@ from src.feature_engineering import (
     features_transformation
 )
 
-
 X_train, X_test, y_train, y_test = features_train_test(df_final)
 X_train, X_test = features_transformation(X_train, X_test)
 
@@ -104,26 +103,7 @@ for name, model in models.items():
 
 
 
-# ---------- Evaluation Metrics for Classification details ----------
-# Accuracy: % of total correct predictions (correct predictions/total predictions) (balanced)
-# Precison: how many correct out of the predicted positives (when we don't want FP)
-# Recall: how many correct out of the actual positives (when we don't want FN - example: decease detection, fraud detection) -> TP rate
-# F1-score: between Precision and Recall (imbalanced) -> a high F1 score, means a good balance between TP avoid FP
-# Confusion Matrix: TP, TN, FP, FN grid
-# ROC-AUC: area under ROC curve measures probability of Positivs > Negatives, plot TP rate vs FP rate (binary clasifications -> especially imbalanced data)
-# PR-AUC: area under plot Precision vs Recall curve -> focuses on minority class performance (highly imbalanced data) 
-
-
-
-
-
-
-
-
-
-
-
-# Approach for the decided model
+# ---------- Approach for the decided model ----------
 
 # pipeline = Pipeline(
 #     steps=[
