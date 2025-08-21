@@ -48,6 +48,15 @@ It demonstrates a complete ML workflow from data preparation → feature enginee
 	•	matplotlib
 	•	seaborn
 
+# Evaluation Metrics usually for Classification models
+	•	Accuracy: % of total correct predictions (correct predictions/total predictions) (balanced)
+	•	Precison: how many correct out of the predicted positives (when we don't want FP)
+	•	Recall: how many correct out of the actual positives (when we don't want FN - example: decease detection, fraud detection) -> TP rate
+	•	F1-score: between Precision and Recall (imbalanced) -> a high F1 score, means a good balance between TP avoid FP
+	•	Confusion Matrix: TP, TN, FP, FN grid
+	•	ROC-AUC: area under ROC curve measures probability of Positivs > Negatives, plot TP rate vs FP rate (binary clasifications -> especially imbalanced data)
+	•	PR-AUC: area under plot Precision vs Recall curve -> focuses on minority class performance (highly imbalanced data) 
+
  # Next Steps / Improvements
 	•	Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
     •	Experiment with different features
