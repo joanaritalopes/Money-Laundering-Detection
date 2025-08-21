@@ -39,3 +39,16 @@ It demonstrates a complete ML workflow from data preparation → feature enginee
 	•	ROC-AUC, PR-AUC
 	•	Confusion Matrix
 	•	ROC Curve & Precision-Recall Curve
+
+# Main libraries used:
+	•	pandas
+	•	numpy
+	•	scikit-learn
+	•	imblearn
+	•	matplotlib
+	•	seaborn
+
+ # Next Steps / Improvements
+	•	Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
+    •	Experiment with different features
+ 
