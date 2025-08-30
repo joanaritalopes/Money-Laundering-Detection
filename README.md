@@ -58,6 +58,7 @@ It demonstrates a complete ML workflow from data preparation → feature enginee
 	•	PR-AUC: area under plot Precision vs Recall curve -> focuses on minority class performance (highly imbalanced data) 
 
  # Next Steps / Improvements
+     •	Unsupervised learning to detect unknown laudering patterns
 	•	Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
     •	Experiment with different features
 	•	Create Unit tests for code expected behavior validation
