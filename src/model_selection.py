@@ -121,12 +121,13 @@ for name, model in models.items():
     evaluate_model(model, X_test, y_test)
 
 
-# ---------- Approach for the decided model ----------
+---------- Approach for the decided model ----------
 
-# pipeline = Pipeline(
-#     steps=[
-#         ('preprocessor', preprocessor),
-#         ('smote', SMOTE(random_state=42)), # imbalanced data - generate rows for minority class
-#         ('model', RandomForestClassifier(random_state=42))
-#     ]
-# )
+pipeline = Pipeline(
+    steps=[
+        ('preprocessor', preprocessor),
+        ('smote', SMOTE(random_state=42)), # imbalanced data - generate rows for minority class
+        ('model', RandomForestClassifier(random_state=42))
+    ]
+)
+
